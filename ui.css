@@ -1,0 +1,106 @@
+@charset 'utf-8';
+
+body {
+  color: #666;
+  font-size: 10pt;
+}
+
+#menu {
+  left: 150px;
+  margin-left: -150px;
+  overflow-x: hidden;
+  position: fixed;
+  z-index: 1000;
+}
+
+#menu .pure-menu {
+  background: black !important;
+}
+
+#main {
+  left: 150px;
+  position: relative;
+  width: calc(100% - 150px);
+}
+
+.hero h1 {
+  color: rgb(0, 158, 255);
+  font-size: 4em;
+  text-align: center;
+}
+
+article h2 {
+}
+
+article pre {
+  background: #eee;
+  color: rgb(0, 0, 58);
+  padding: 1em 0.5em;
+}
+
+footer {
+  font-size: smaller;
+}
+
+@media only screen and (max-width: 960px) {
+  #menu {
+    position: relative;
+  }
+
+  #main {
+    left: 0;
+    width: 100%;
+  }
+}
+
+
+@media only screen and (max-width: 480) {
+}
+
+.live,
+.live1,
+.live2,
+.live2off,
+p.live5,
+.live6c {
+  background: rgb(125, 240, 255);
+  line-height: 3em;
+  padding-left: 1em;
+  width: 90%;
+}
+
+.live1 .del {
+  color: rgb(85, 200, 64);
+  cursor: pointer;
+}
+
+.live1 .del:hover,
+.live1 .del:focus,
+.live1 .del:active {
+  color: rgb(255, 125, 64);
+}
+
+.live2off {
+  background: rgb(255, 200, 240);
+}
+
+#live3,
+#live4,
+#live6holder,
+#live6a,
+#live6b {
+  border: 1px solid #ccc;
+  padding-left: 1em;
+}
+
+input.live5 {
+  width: 90%;
+}
+
+.color0 { background: rgb(125, 240, 255); }
+.color1 { background: rgb(255, 200, 240); }
+.color2 { background: rgb( 85, 200,  64); }
+.color3 { background: rgb(234, 255,   0); }
+.color4 { background: rgb(255, 125,  64); }
+.color5 { background: rgb(186,  57, 255); }
+.color6 { background: rgb(255,  16,  56); }

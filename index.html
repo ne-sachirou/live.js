@@ -1,0 +1,394 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>live.js</title>
+  <link rel="copyright" href="http://creativecommons.org/licenses/by/3.0/" />
+  <link rel="author" href="http://c4se.hatenablog.com/" />
+
+  <link rel="stylesheet" href="pure-min.css" />
+
+  <link rel="stylesheet" href="themes/espresso-libre.css" />
+  <script src="rainbow.js"></script>
+  <script src="language/generic.js"></script>
+  <script src="language/javascript.js"></script>
+
+  <link rel="stylesheet" href="ui.css" />
+</head>
+<body>
+  <div id="container" class="pure-g-r">
+    <div id="menu" class="pure-u">
+      <nav class="pure-menu pure-menu-open">
+        <a class="pure-menu-head" href="#top">live.js</a>
+        <ul>
+          <li><a href="#description">description</a></li>
+          <li><a href="#purpose">purpose</a></li>
+          <li><a href="#live">live()</a></li>
+          <li><a href="#on">.on()</a></li>
+          <li><a href="#off">.off()</a></li>
+          <li><a href="#context">context</a></li>
+          <li><a href="#namespace">namespace</a></li>
+          <li><a href="#events">events</a></li>
+          <li><a href="#FutureLive">FutureLive</a></li>
+        </ul>
+      </nav>
+    </div>
+    <div id="main" class="pure-u">
+      <header class="hero">
+        <h1 class="pure-u-1">live.js</h1>
+        <div class="hero-cta pure-u-3-4">
+          <a class="pure-button pure-button-cta" href="">View on GitHub</a>
+        </div>
+      </header>
+      <article>
+        <h2><a name="description"></a>description</h2>
+        <pre class="snippet"><code>
+/**
+ * @description
+ *   <a href="live.js">live.js</a>
+ *   Like jQuery().delegate() and Zepto().delegate()
+ *   Not like jQuery and Zepto, we only implements one simple feature,
+ *   and fully annotated.
+ *   We support only latest versions of web browsers on desktop and mobile.
+ *   Please use with polyfills.
+ *   Recommended polyfills:
+ *     Pointer Events: Hand.js <a href="http://handjs.codeplex.com/">http://handjs.codeplex.com/</a>
+ *     polyfills: Platform <a href="https://github.com/Polymer/platform">https://github.com/Polymer/platform</a>
+ * @author ne_Sachirou &lt;utakata.c4se@gmail.com&gt;
+ * @license MIT License: live.js (2013-2013)ne_Sachirou &lt;utakata.c4se@gmail.com&gt;
+ */
+</code></pre>
+
+        <h2><a name="purpose"></a>purpose</h2>
+        <p>When we use live.js?</p>
+
+        <h3>Deleagte</h3>
+        <div class="pure-g">
+          <p><img src="images/purpose_deleagte.png" alt="live.js delegate" /></p>
+          <p></p>
+        </div>
+
+        <h3>Live</h3>
+        <p><img src="images/purpose_live.png" alt="live.js live" /></p>
+        <p></p>
+
+        <h2><a name="live" data-section="live()"></a>live()</h2>
+        <pre><code>
+/**
+ * @constructor
+ * @param {string} selector
+ * @param {(HTMLElement|string)=} context =document.body
+ * @return {live|FutureLive} Returns an equal instance when params are equal.
+ */
+function live(selector, context) {
+}
+</code></pre>
+        <pre class="snippet" data-section="live()"><code data-language="javascript">live('p.live');</code></pre>
+        <p>Demo will be at following.</p>
+
+        <h2><a name="on"></a>.on()</h2>
+        <pre><code>
+/**
+ * @param {string} eventName Separated with space.
+ * @param {function(Event):boolean} callback
+ * @param {string=} namespace
+ * @return {live}
+ */
+on: function(eventName, callback, namespace) {
+}
+</code></pre>
+        <pre class="snippet" data-section=".on()"><code data-language="javascript"></code></pre>
+        <h3>demo</h3>
+        <p class="live1">p.live1</p>
+
+        <h2><a name="off"></a>.off()</h2>
+        <pre><code>
+/**
+ * @param {string=} eventName Separated with space.
+ * @param {string=} namespace
+ * @return {live}
+ */
+off: function(eventName, namespace) {
+}
+</code></pre>
+        <pre class="snippet" data-section='.off()'><code data-language="javascript"></code></pre>
+        <h3>demo</h3>
+        <p class="live2">p.live2</p>
+
+        <h2><a name="context"></a>context</h2>
+        <pre class="snippet" data-section="context"><code data-language="javascript"></code></pre>
+        <h3>demo</h3>
+        <p class="live">.live</p>
+        <div id="live3">
+          #live3
+          <p class="live">.live</p>
+        </div>
+
+        <h2><a name="namespace"></a>namespace</h2>
+        <pre class="snippet" data-section="namespace"><code data-language="javascript"></code></pre>
+        <h3>demo</h3>
+        <div id='live4'>
+          #live4
+          <p class='live'>.live</p>
+        </div>
+
+        <h2><a name="events" data-section="events"></a>events</h2>
+        <pre><code>
+/**
+ * Events we support.
+ *
+ * @const
+ * @type {Array.&lt;string&gt;}
+ */
+var targetEventNames = [
+  'pointerdown',
+  'pointerup',
+  'pointermove',
+  'pointerover',
+  'pointerout',
+  'pointercancel',
+  'pointerenter',
+  'pointerleave',
+  'keydown',
+  'keyup',
+  'keypress',
+
+  'mousemove',
+  'mouseover',
+  'mouseout',
+  'mousedown',
+  'mouseup',
+  'click',
+  'dblclick'
+];
+</code></pre>
+        <pre class="snippet" data-section="events"><code data-language="javascript"></code></pre>
+        <h3>demo</h3>
+        <p class="live5pointerdown live5">.live5pointerdown</p>
+        <p class="live5pointerup live5">.live5pointerup</p>
+        <p class="live5pointermove live5">.live5pointermove</p>
+        <p class="live5pointerover live5">.live5pointerover</p>
+        <p class="live5pointerout live5">.live5pointerout</p>
+        <p class="live5pointercancel live5">.live5pointercancel</p>
+        <p class="live5pointerenter live5">.live5pointerenter</p>
+        <p class="live5pointerleave live5">.live5pointerleave</p>
+        <p><input type="text" class="live5keydown live5" placeholder="live5keydown" /></p>
+        <p><input type="text" class="live5key live5" placeholder="live5keyup" /></p>
+        <p><input type="text" class="live5key live5" placeholder="live5keypress" /></p>
+
+        <h2><a name="FutureLive"></a>FutureLive</h2>
+        <pre><code>
+/**
+ * @constructor
+ * @param {string} selector
+ * @param {(HTMLElement|string)=} context =document.body
+ * @return {live|FutureLive} Returns an equal instance when params are equal.
+ */
+function live(selector, context) {
+}
+
+/**
+ * @param {string} selector as a future context.
+ * @param {HTMLElement=} context =document
+ * @param {function(HTMLElement)} callback
+ */
+live.onload = function(selector, context, callback) {
+};
+</code></pre>
+        <pre class="snippet" data-section="FutureLive"><code data-language="javascript">
+</code></pre>
+        <h3>demo</h3>
+        <p><a id="live6create" class="pure-button pure-button-cta" href="">Create</a></p>
+        <div id="live6holder">
+          #live6holder
+        </div>
+
+      </article>
+      <footer>
+        <p>(CC by)2013-2013 <a href="http://c4se.hatenablog.com/">ne_Sachirou</a> &lt;utakata.c4se@gmail.com&gt;</p>
+      </footer>
+    </div>
+  </div>
+  <script src="hand.js"></script>
+  <script src="https://raw.github.com/ne-sachirou/live.js/master/live.js"></script>
+  <script src="ui.js"></script>
+  <script class="snippet">
+// {{{ .on()
+live('p.live1').on('pointerup', live1insert);
+live('p.live1 a.del').on('pointerup', live1delete);
+var live1count = 0;
+function live1insert(evt) {
+  var p = document.createElement('p');
+
+  live1count += 1;
+  p.classList.add('live1');
+  p.innerHTML = 'p.live1 ' + live1count +  ' [<a class="del">Delete</a>]';
+  evt.target.parentNode.insertBefore(p, evt.target.nextSibling);
+}
+function live1delete(evt) {
+  var p = evt.target.parentNode;
+
+  p.parentNode.removeChild(p);
+  return false;
+}
+// }}} .on()
+
+// {{{ .off()
+live('p.live2').on('pointerup', live2insert);
+live('p.live2off').on('pointerup', live2off);
+function live2insert(evt) {
+  var p = document.createElement('p');
+
+  p.classList.add('live2off');
+  p.textContent = 'p.live2off';
+  evt.target.parentNode.insertBefore(p, evt.target.nextSibling);
+}
+function live2off(evt) {
+  live('p.live2').off('pointerup');
+}
+// }}} .off()
+
+// {{{ context
+var live3node = document.getElementById('live3');
+live('.live', live3node).on('click', live3change);
+live('.live', live3node).on('click',
+  function(evt) { console.count(); });
+var live3count = 0;
+function live3change(evt) {
+  var p = document.createElement('p');
+
+  live3count += 1;
+  p.classList.add('live');
+  p.classList.add('color' + (live3count % 7));
+  p.textContent = '.live .color' + (live3count % 7);
+  evt.target.parentNode.insertBefore(p, evt.target.nextSibling);
+  if (live3count >= 6)
+    live('.live', live3node).off();
+}
+// }}} context
+
+// {{{ namespace
+var live4node = document.getElementById('live4');
+live('.live', live4node)
+  .on('click', live4insert)
+  .on('pointerover pointerleave', live4change, 'live4');
+var live4count = 0;
+function live4insert(evt) {
+  var p = document.createElement('p');
+
+  live4count += 1;
+  p.classList.add('live');
+  p.classList.add('color' + (live4count % 7));
+  p.textContent = '.live .color' + (live4count % 7);
+  evt.target.parentNode.insertBefore(p, evt.target.nextSibling);
+  if (live4count >= 6)
+    live('.live', live4node).off();
+}
+function live4change(evt) {
+  var i, iz, match, color,
+      classList = evt.target.classList;
+
+  for (i = 0, iz = classList.length; i < iz; ++i) {
+    match = classList[i].match(/^color(\d)/);
+    if (match) {
+      evt.target.classList.remove('color' + match[1]);
+      color = (parseInt(match[1]) + 1) % 7;
+      evt.target.classList.add('color' + color);
+      evt.target.textContent = '.live .color' + color;
+      return
+    }
+  }
+  evt.target.classList.add('color1');
+  evt.target.textContent = '.live color1';
+}
+// }}} namespace
+
+// {{{ events
+[
+  'pointerdown',
+  'pointerup',
+  'pointermove',
+  'pointerover',
+  'pointerout',
+  'pointercancel',
+  'pointerenter',
+  'pointerleave',
+  'keydown',
+  'keyup',
+  'keypress'
+].forEach(
+  function(eventName) {
+    live('.live5' + eventName).on(eventName,
+      (function() {
+        var count = 0;
+
+        return function(evt) {
+          count += 1;
+          evt.target[typeof evt.target.value === 'string' ?
+            'value' :
+            'textContent'] =
+            '.' + evt.target.classList[0] + count;
+        };
+      }())
+    );
+  });
+// }}} events
+
+// {{{ FutureLive
+document.getElementById('live6create').onclick = live6create;
+live('.live', '#live6a').on('pointerdown',
+  function(evt) { console.count(); });
+live('.live', '#live6a').on('pointerdown',
+  function(evt) {
+    evt.target.classList.add('color3');
+    evt.target.innerHTML += ' .color3';
+  }).
+  on('pointerdown', function(evt) { console.count(); });
+live('.live', '#live6b').on('pointerdown',
+  function(evt) { console.count(); });
+live.onload('#live6b',
+  function(node) {
+    live('.live', node).on('pointerdown',
+      function(evt) {
+        node.innerHTML += '<p class="live color6">.live .color6</p>';
+      });
+  });
+live.onload('.live6c', document.getElementById('live6holder'),
+  function(node) {
+    node.innerHTML += ' !';
+  });
+function live6create(evt) {
+  var holder, p1, p2, p3, p4;
+
+  /**
+   * @param {string=} id
+   * @param {string=} classList
+   * @param {string=} innerHTML
+   */
+  function createParagraph(id, classList, innerHTML) {
+    var p = document.createElement('p');
+
+    if (id)
+      p.id = id;
+    if (classList)
+      p.classList.add(classList);
+    if (innerHTML)
+      p.innerHTML = innerHTML;
+    return p;
+  }
+
+  evt.preventDefault();
+  holder = document.getElementById('live6holder');
+  p1 = createParagraph('live6a', null, '#live6a<p class="live">.live</p>');
+  holder.appendChild(p1);
+  p2 = createParagraph('live6b', null, '#live6b<p class="live">.live</p>');
+  holder.appendChild(p2);
+  p3 = createParagraph(null, 'live6c', '.live6c');
+  holder.appendChild(p3);
+  p4 = createParagraph(null, 'live6c', '.live6c');
+  holder.parentNode.insertBefore(p4, holder.nextSibling);
+}
+// }}} FutureLive
+  </script>
+</body>
+</html>

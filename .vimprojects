@@ -1,0 +1,5 @@
+setl et
+setl sw=2
+setl sts=2
+setl ff=unix
+setl foldmethod=marker
