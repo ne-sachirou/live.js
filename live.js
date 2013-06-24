@@ -186,7 +186,8 @@ live.prototype = {
    * @return {live}
    */
   on: function(eventName, callback, namespace) {
-    var eventNames;
+    var eventNames,
+        me = this;
 
     eventName = eventName.trim().toLowerCase();
     eventNames = eventName.split(/\s+/);
@@ -194,12 +195,10 @@ live.prototype = {
       if (! this.namespaces[namespace])
         this.namespaces[namespace] = new EventMap;
       eventNames.forEach(
-        function(name) { this.namespaces[namespace][name].push(callback); },
-        this);
+        function(name) { me.namespaces[namespace][name].push(callback); });
     } else {
       eventNames.forEach(
-        function(name) { this.events[name].push(callback); },
-        this);
+        function(name) { me.events[name].push(callback); });
     }
     return this;
   },
@@ -223,8 +222,7 @@ live.prototype = {
     if (eventNames.length === 1 && isSupportedEvent(eventNames[0])) {
       if (namespace !== void 0) {
         eventNames.forEach(
-          function(name) { this.namespaces[namespace][name] = []; },
-          this);
+          function(name) { me.namespaces[namespace][name] = []; });
       } else {
         this.events[eventName] = [];
         Object.keys(this.namespaces).forEach(
@@ -304,7 +302,7 @@ function checkHover(containNode, eventName) {
   else if (isContainPrev && ! isContain)
     return match[1] + 'out';
   else
-     return null;
+    return null;
 }
 
 /**
@@ -379,9 +377,10 @@ function bindFutureLive(context, futureLive) {
  * @struct
  */
 function EventMap() {
+  var me = this;
+
   targetEventNames.forEach(
-    function(eventName) { this[eventName] = []; },
-    this);
+    function(eventName) { me[eventName] = []; });
 }
 
 EventMap.prototype = {
