@@ -1,0 +1,21 @@
+{
+  "name": "live.js",
+  "main": "live.js",
+  "version": "0.0.0",
+  "homepage": "http://ne-sachirou.github.io/live.js/",
+  "authors": [
+    "ne_Sachirou <utakata.c4se@gmail.com>"
+  ],
+  "description": "Like jQuery().delegate() and Zepto().delegate()",
+  "keywords": [
+    "event"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
