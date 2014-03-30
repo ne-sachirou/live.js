@@ -94,7 +94,7 @@ function live(selector, context) {
  * @param {string=} namespace
  * @return {live}
  */
-on: function(eventName, callback, namespace) {
+on: function (eventName, callback, namespace) {
 }
 </code></pre>
         <pre class="snippet" data-section=".on()"><code data-language="javascript"></code></pre>
@@ -108,7 +108,7 @@ on: function(eventName, callback, namespace) {
  * @param {string=} namespace
  * @return {live}
  */
-off: function(eventName, namespace) {
+off: function (eventName, namespace) {
 }
 </code></pre>
         <pre class="snippet" data-section='.off()'><code data-language="javascript"></code></pre>
@@ -192,7 +192,7 @@ function live(selector, context) {
  * @param {HTMLElement=} context =document
  * @param {function(HTMLElement)} callback
  */
-live.onload = function(selector, context, callback) {
+live.onload = function (selector, context, callback) {
 };
 </code></pre>
         <pre class="snippet" data-section="FutureLive"><code data-language="javascript">
@@ -252,7 +252,7 @@ function live2off(evt) {
 var live3node = document.getElementById('live3');
 live('.live', live3node).on('click', live3change);
 live('.live', live3node).on('click',
-  function(evt) { console.count(); });
+  function (evt) { console.count(); });
 var live3count = 0;
 function live3change(evt) {
   var p = document.createElement('p');
@@ -317,12 +317,12 @@ function live4change(evt) {
   'keyup',
   'keypress'
 ].forEach(
-  function(eventName) {
+  function (eventName) {
     live('.live5' + eventName).on(eventName,
-      (function() {
+      (function () {
         var count = 0;
 
-        return function(evt) {
+        return function (evt) {
           count += 1;
           evt.target[typeof evt.target.value === 'string' ?
             'value' :
@@ -337,24 +337,24 @@ function live4change(evt) {
 // {{{ FutureLive
 document.getElementById('live6create').onclick = live6create;
 live('.live', '#live6a').on('pointerdown',
-  function(evt) { console.count(); });
+  function (evt) { console.count(); });
 live('.live', '#live6a').on('pointerdown',
-  function(evt) {
+  function (evt) {
     evt.target.classList.add('color3');
     evt.target.innerHTML += ' .color3';
   }).
-  on('pointerdown', function(evt) { console.count(); });
+  on('pointerdown', function (evt) { console.count(); });
 live('.live', '#live6b').on('pointerdown',
-  function(evt) { console.count(); });
+  function (evt) { console.count(); });
 live.onload('#live6b',
-  function(node) {
+  function (node) {
     live('.live', node).on('pointerdown',
-      function(evt) {
+      function (evt) {
         node.innerHTML += '<p class="live color6">.live .color6</p>';
       });
   });
 live.onload('.live6c', document.getElementById('live6holder'),
-  function(node) {
+  function (node) {
     node.innerHTML += ' !';
   });
 function live6create(evt) {

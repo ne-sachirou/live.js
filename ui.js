@@ -1,5 +1,9 @@
+if (!Array.from) {
+  Array.from = function (obj) { return [].slice.call(obj); };
+}
+
 /// {{{ collectSnippets
-(function(scope) {
+(function (scope) {
   scope.collectSnippets = collectSnippets;
 
   /** @type {string?} */
@@ -61,25 +65,9 @@ function initSnippets(evt) {
       code.textContent += sections[section];
   }
 
-  toArray(document.getElementsByTagName('code')).forEach(
-    function(code) { code.innerHTML = code.innerHTML.trim(); });
+  Array.from(document.getElementsByTagName('code')).forEach(
+    function (code) { code.innerHTML = code.innerHTML.trim(); });
   sections = collectSnippets();
-  snippets = toArray(document.querySelectorAll('pre.snippet'));
+  snippets = Array.from(document.querySelectorAll('pre.snippet'));
   snippets.forEach(init);
-}
-
-/**
- * Convert Array-like object to Array.
- *
- * @pure
- * @param {object} obj
- * @return {Array}
- */
-function toArray(obj) {
-  var i, iz,
-      acum = [];
-
-  for (i = 0, iz = obj.length; i < iz; ++i)
-    acum.push(obj[i]);
-  return acum;
 }
