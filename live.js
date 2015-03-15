@@ -2,212 +2,273 @@
  * @description
  *   live.js
  *   Like `$().delegate()` of jQuery and Zepto.
- *   Not like jQuery and Zepto, we only implements one simple feature, and fully annotated.
+ *   Not like jQuery and Zepto, we only implements one simple feature.
  *   We only support latest versions of web browsers on desktop and mobile.
  * @author ne_Sachirou <utakata.c4se@gmail.com>
  * @license MIT License
  */
 (function (scope) {
-/**
- * @constructor
- * @type {function(string,HTMLElement=):live}
- */
+/** @type {function(string,HTMLElement?):live} */
 scope.live = live;
 
-/**
- * Events we support.
- *
- * @const
- * @type {Array.<string>}
- */
-var targetEventNames = [
-    'pointerdown',
-    'pointerup',
-    'pointermove',
+/** Events we support. */
+var EVENT_NAMES = [
     'pointerover',
-    'pointerout',
-    'pointercancel',
     'pointerenter',
+    'pointerdown',
+    'pointermove',
+    'pointerup',
+    'pointercancel',
+    'pointerout',
     'pointerleave',
-    'keydown',
-    'keyup',
-    'keypress',
+    'gotpointercapture',
+    'lostpointercapture',
 
     'mousemove',
     'mouseover',
     'mouseout',
     'mousedown',
     'mouseup',
+
     'click',
-    'dblclick'
+    'dblclick',
+
+    'keydown',
+    'keyup',
+    'keypress'
   ];
 
+// {{{ util
+function isSupportedEvent(eventName) {
+  return EVENT_NAMES.some(function (elm) {
+    return elm === eventName;
+  });
+}
+
+/**
+ * Find a node selector-matched in which contains the node.
+ *
+ * @param {string}       selector
+ * @param {HTMLElement}  node
+ * @param {HTMLElement?} context  =document
+ *
+ * @return {HTMLElement?} Returns null when no one is found.
+ */
+function contains(selector, node, context) {
+  context = context || document;
+  return takeFirst(Array.from(context.querySelectorAll(selector)), function (selectedNode) {
+    return selectedNode === node;
+  });
+  // return takeFirst(Array.from(context.querySelectorAll(selector)), function (selectedNode) {
+  //   return selectedNode.contains(node);
+  // });
+}
+
+/**
+ * @param {HTMLElement} node
+ * @param {number}      x
+ * @param {number}      y
+ *
+ * @return {boolean}
+ */
+function doseContainPointer(node, x, y) {
+  var rect, left, top;
+  rect = node.getBoundingClientRect();
+  left = rect.left + window.scrollX;
+  top = rect.top + window.scrollY;
+  return (left <= x && x < left + rect.width) && (top <= y && y < top + rect.height);
+}
+
+if (!Array.from) {
+  Array.from = function (obj) {
+    return [].slice.call(obj);
+  };
+}
+
+/**
+ * @param {any<T>[]}                 arr
+ * @param {function(any<T>):boolean} fun
+ *
+ * @return {any<T>?}
+ */
+function takeFirst(arr, fun) {
+  var elm,
+      i  = 0,
+      iz = arr.length;
+  for (; i < iz; ++i) {
+    elm = arr[i];
+    if (void 0 !== elm && fun(elm)) {
+      return elm;
+    }
+  }
+  return null;
+}
+// }}} util
+
 // {{{ pointerXY
-/** @type {number} */
-var pPointerX = 0;
-/** @type {number} */
-var pPointerY = 0;
-/** @type {number} */
-var pointerX = 0;
-/** @type {number} */
-var pointerY = 0;
+var pPointerX = 0,
+    pPointerY = 0,
+    pointerX  = 0,
+    pointerY  = 0;
 document.body.addEventListener('pointermove', updatePointerXY);
 document.body.addEventListener('pointerover', updatePointerXY);
-document.body.addEventListener('pointerout', function(evt) {
+document.body.addEventListener('pointerout', function (evt) {
   pointerX = pPointerX;
   pointerY = pPointerY;
 });
-/**
- * @param {MouseEvent} evt
- */
+
+/** @param {PointerEvent} evt */
 function updatePointerXY(evt) {
   pPointerX = pointerX;
   pPointerY = pointerY;
-  pointerX = evt.clientX + window.scrollX;
-  pointerY = evt.clientY + window.scrollY;
+  pointerX  = evt.clientX + window.scrollX;
+  pointerY  = evt.clientY + window.scrollY;
 }
 // }}} pointerXY
 
 // {{{ live
 /**
  * @constructor
- * @param {string} selector
- * @param {(HTMLElement|string)=} context =document.body
+ *
+ * @prop {string}                   selector
+ * @prop {HTMLElement}              context
+ * @prop {EventMap}                 events
+ * @prop {Object.<string,EventMap>} namespaces
+ *
+ * @param {string}                selector
+ * @param {(HTMLElement|string)?} context  =document.body
+ *
  * @return {live|FutureLive} Returns an equal instance when params are equal.
  */
 function live(selector, context) {
   /** @type {live} */
   var instance;
-
-  if (! (this instanceof live))
-    return new live(selector, context);
-  if (typeof context === 'string')
+  if ('string' === typeof context || context instanceof String) {
     return new FutureLive(selector, context);
+  }
+  if (!(this instanceof live)) {
+    return new live(selector, context);
+  }
   context = context || document.body;
-  if (! context.bindings)
+  if (!context.bindings) {
     initContext(context);
-  instance = takeFirst(context.bindings,
-    function(binding) { return binding.selector === selector; });
-  if (instance)
+  }
+  instance = takeFirst(context.bindings, function (binding) {
+    return binding.selector === selector;
+  });
+  if (instance) {
     return instance;
-  /** @type {string} */
-  this.selector = selector;
-  /** @type {HTMLElement} */
-  this.context = context;
-  /** @type {EventMap} */
-  this.events = new EventMap;
-  /** @type {Object.<string,EventMap> */
+  }
+  this.selector   = selector;
+  this.context    = context;
+  this.events     = new EventMap();
   this.namespaces = {};
   context.bindings.push(this);
 }
 
 /**
- * @param {string} selector as a future context.
- * @param {HTMLElement=} context =document
+ * @param {string}       selector as a future context.
+ * @param {HTMLElement?} context  =document
+ *
  * @param {function(HTMLElement)} callback
  */
 live.onload = function(selector, context, callback) {
   var observer;
-
-  /**
-   * @param {MutationRecord} record
-   */
+  /** @param {MutationRecord} record */
   function onMutation(record) {
-    toArray(record.addedNodes).forEach(
-      function(node) {
-        if (! node.tagName)
-          return;
-        fireOnMutation(node);
-      });
+    Array.from(record.addedNodes).forEach(function (node) {
+      if (! node.tagName)
+        return;
+      fireOnMutation(node);
+    });
   }
 
-  /**
-   * @param {HTMLElement} node
-   */
+  /** @param {HTMLElement} node */
   function fireOnMutation(node) {
     context.onLoadBindings.forEach(
       /** @param {LiveOnLoad} */
-      function(binding) {
-        var containsNode = contains(binding.selector, node, context);
-        if (containsNode === node)
+      function (binding) {
+        if (contains(binding.selector, node, context) === node) {
           binding.callback(node);
+        }
       });
   }
 
-  if (typeof context === 'function') {
+  if ('function' === typeof context) {
     callback = context;
     context = document;
   }
-  if (! context.onLoadBindings) {
-    /** @type {Array.<LiveOnLoad>} */
+  if (!context.onLoadBindings) {
+    /** @type {LiveOnLoad[]} */
     context.onLoadBindings = [];
-    observer = new MutationObserver(
-      function(records) { records.forEach(onMutation); });
+    observer = new MutationObserver(function (records) {
+      records.forEach(onMutation);
+    });
     observer.observe(context, { childList: true, subtree: true });
   }
   context.onLoadBindings.push(new LiveOnLoad(selector, callback));
 };
 
-live.prototype = {
-  /**
-   * @param {string} eventName Separated with space.
-   * @param {function(Event):boolean} callback
-   * @param {string=} namespace
-   * @return {live}
-   */
-  on: function(eventName, callback, namespace) {
-    var eventNames,
-        me = this;
+/**
+ * @param {string}                  eventName Separated with space.
+ * @param {function(Event):boolean} callback
+ * @param {string?}                 namespace
+ *
+ * @return {live}
+ */
+live.prototype.on = function (eventName, callback, namespace) {
+  var eventNames;
+  eventName = eventName.trim().toLowerCase();
+  eventNames = eventName.split(/\s+/);
+  if (namespace) {
+    if (!this.namespaces[namespace])
+      this.namespaces[namespace] = new EventMap();
+    eventNames.forEach(function(name) {
+      this.namespaces[namespace][name].push(callback);
+    }, this);
+  } else {
+    eventNames.forEach(function(name) {
+      this.events[name].push(callback);
+    }, this);
+  }
+  return this;
+};
 
-    eventName = eventName.trim().toLowerCase();
-    eventNames = eventName.split(/\s+/);
-    if (namespace) {
-      if (! this.namespaces[namespace])
-        this.namespaces[namespace] = new EventMap;
-      eventNames.forEach(
-        function(name) { me.namespaces[namespace][name].push(callback); });
-    } else {
-      eventNames.forEach(
-        function(name) { me.events[name].push(callback); });
-    }
-    return this;
-  },
-
-  /**
-   * @param {string=} eventName Separated with space.
-   * @param {string=} namespace
-   * @return {live}
-   */
-  off: function(eventName, namespace) {
-    var eventNames,
-        me = this;
-
-    if (! eventName && ! namespace) {
-      this.events = new EventMap;
-      this.namespaces = {};
-      return this;
-    }
-    eventName = eventName.trim().toLowerCase();
-    eventNames = eventName.split(/\s+/);
-    if (eventNames.length === 1 && isSupportedEvent(eventNames[0])) {
-      if (namespace !== void 0) {
-        eventNames.forEach(
-          function(name) { me.namespaces[namespace][name] = []; });
-      } else {
-        this.events[eventName] = [];
-        Object.keys(this.namespaces).forEach(
-          function(namespace) {
-            eventNames.forEach(
-              function(name) { me.namespaces[namespace][name] = []; });
-          });
-      }
-      return this;
-    }
-    namespace = eventName;
-    this.namespaces[namespace] = new EventMap;
+/**
+ * @param {string?} eventName Separated with space.
+ * @param {string?} namespace
+ *
+ * @return {live}
+ */
+live.prototype.off = function (eventName, namespace) {
+  var eventNames;
+  if (!eventName && !namespace) {
+    this.events = new EventMap();
+    this.namespaces = {};
     return this;
   }
+  eventName = eventName.trim().toLowerCase();
+  eventNames = eventName.split(/\s+/);
+  if (eventNames.length === 1 && isSupportedEvent(eventNames[0])) {
+    if (namespace !== void 0) {
+      eventNames.forEach(function (name) {
+        this.namespaces[namespace][name] = [];
+      }, this);
+    } else {
+      this.events[eventName] = [];
+      Object.keys(this.namespaces).forEach(function (namespace) {
+        eventNames.forEach(function (name) {
+          this.namespaces[namespace][name] = [];
+        }, this);
+      }, this);
+    }
+    return this;
+  }
+  namespace = eventName;
+  this.namespaces[namespace] = new EventMap();
+  return this;
 };
+
 
 /**
  * @param {HTMLElement} context
@@ -215,37 +276,33 @@ live.prototype = {
 function initContext(context) {
   /** @type {Array.<live>} */
   context.bindings = [];
-  targetEventNames.forEach(
-    function(eventName) {
-      context.addEventListener(eventName,
-        function(evt) { fire(eventName, evt, context); },
-        false);
-    });
+  EVENT_NAMES.forEach(function (eventName) {
+    context.addEventListener(eventName, function (evt) {
+      fire(eventName, evt, context);
+    }, false);
+  });
 }
 
 /**
- * @param {string} eventName
- * @param {Event} evt
+ * @param {string}      eventName
+ * @param {Event}       evt
  * @param {HTMLElement} context
  */
 function fire(eventName, evt, context) {
-  /**
-   * @param {live} binding
-   */
+  /** @param {live} binding */
   function check(binding) {
-    var containNode;
-
-    containNode = contains(binding.selector, evt.target, context);
-    if (! containNode)
+    var containNode = contains(binding.selector, evt.target, context);
+    if (!containNode) {
       return;
+    }
     eventName = checkHover(containNode, eventName);
-    if (! eventName)
+    if (!eventName) {
       return;
+    }
     callEventCallback(binding.events, eventName, evt, binding);
-    Object.keys(binding.namespaces).forEach(
-      function(namespace) {
-        callEventCallback(binding.namespaces[namespace], eventName, evt, binding);
-      });
+    Object.keys(binding.namespaces).forEach(function (namespace) {
+      callEventCallback(binding.namespaces[namespace], eventName, evt, binding);
+    });
   }
 
   context.bindings.forEach(check);
@@ -257,87 +314,86 @@ function fire(eventName, evt, context) {
  * @return {string}
  */
 function checkHover(containNode, eventName) {
-  var match, isContainPrev, isContain;
-  var _px = pPointerX, _py = pPointerY, _x = pointerX, _y = pointerY;
-
+  var match, isContainPrev, isContain,
+      _px = pPointerX,
+      _py = pPointerY,
+      _x  = pointerX,
+      _y  = pointerY;
   match = eventName.match(/^(pointer|mouse)(?:move|over|out)/i);
-  if (! match)
+  if (!match) {
     return eventName;
-  isContainPrev = isContainPointer(containNode, _px, _py);
-  isContain = isContainPointer(containNode, _x, _y);
-  if (isContainPrev && isContain)
+  }
+  isContainPrev = doseContainPointer(containNode, _px, _py);
+  isContain = doseContainPointer(containNode, _x, _y);
+  if (isContainPrev && isContain) {
     return match[1] + 'move';
-  else if (! isContainPrev && isContain)
+  } else if (!isContainPrev && isContain) {
     return match[1] + 'over';
-  else if (isContainPrev && ! isContain)
+  } else if (isContainPrev && !isContain) {
     return match[1] + 'out';
-  else
+  } else {
     return null;
+  }
 }
 
 /**
  * @param {EventMap} eventMap
- * @param {string} eventName
- * @param {Event} evt
- * @param {live} me
+ * @param {string}   eventName
+ * @param {Event}    evt
+ * @param {live}     me
  */
 function callEventCallback(eventMap, eventName, evt, me) {
-  eventMap[eventName].forEach(
-    function(callback) {
-      var doseStop;
-
-      doseStop = callback.call(me, evt);
-      if (doseStop === false) {
-        evt.preventDefault();
-        evt.stopPropagation();
-      }
-    });
+  eventMap[eventName].forEach(function (callback) {
+    var doseStop = callback.call(me, evt);
+    if (doseStop === false) {
+      evt.preventDefault();
+      evt.stopPropagation();
+    }
+  });
 }
 // }}} live
 
 // {{{ FutureLive
 /**
  * @constructor
+ *
+ * @prop {string}                   selector
+ * @prop {EventMap}                 events
+ * @prop {Object.<string,EventMap>} namespaces
+ *
  * @param {string} selector
- * @param {string} context selector
+ * @param {string} context  selector
  */
 function FutureLive(selector, context) {
   var me = this;
-
-  live.onload(context,
-    function(node) { bindFutureLive(node, me); });
-  /** @type {string} */
-  this.selector = selector;
-  /** @type {EventMap} */
-  this.events = new EventMap;
-  /** @type {Object.<string,EventMap> */
+  live.onload(context, function (node) {
+    bindFutureLive(node, me);
+  });
+  this.selector   = selector;
+  this.events     = new EventMap();
   this.namespaces = {};
 }
 
-FutureLive.prototype = {
-  on: function(eventName, callback, namespace) {
-    live.prototype.on.call(this, eventName, callback, namespace);
-    return this;
-  },
+FutureLive.prototype.on = function (eventName, callback, namespace) {
+  live.prototype.on.call(this, eventName, callback, namespace);
+  return this;
+};
 
-  off: function(eventName, namespace) {
-    live.prototype.off.call(this, eventName, callback, namespace);
-    return this;
-  }
+FutureLive.prototype.off = function (eventName, namespace) {
+  live.prototype.off.call(this, eventName, callback, namespace);
+  return this;
 };
 
 /**
  * @param {HTMLElement} context
- * @param {FutureLive} futureLive
+ * @param {FutureLive}  futureLive
  */
 function bindFutureLive(context, futureLive) {
   var binding = new live(futureLive.selector, context);
-
   binding.events.join(futureLive.events);
-  Object.keys(futureLive.namespaces).forEach(
-    function(namespace) {
-      binding[namespace].join(futureLive[namespace]);
-    });
+  Object.keys(futureLive.namespaces).forEach(function (namespace) {
+    binding[namespace].join(futureLive[namespace]);
+  });
 }
 // }}} FutureLive
 
@@ -347,26 +403,21 @@ function bindFutureLive(context, futureLive) {
  * @struct
  */
 function EventMap() {
-  var me = this;
-
-  targetEventNames.forEach(
-    function(eventName) { me[eventName] = []; });
+  EVENT_NAMES.forEach(function (eventName) {
+    this[eventName] = [];
+  }, this);
 }
 
-EventMap.prototype = {
-  /**
-   * @param {EventMap} events
-   * @return {EventMap}
-   */
-  join: function(events) {
-    var me = this;
-
-    Object.keys(this).forEach(
-      function(eventName) {
-        me[eventName] = me[eventName].concat(events[eventName]);
-      });
-    return this;
-  }
+/**
+ * @param {EventMap} events
+ *
+ * @return {EventMap}
+ */
+EventMap.prototype.join = function (events) {
+  Object.keys(this).forEach(function (eventName) {
+    this[eventName] = this[eventName].concat(events[eventName]);
+  }, this);
+  return this;
 };
 // }}} EventMap
 
@@ -379,102 +430,5 @@ function LiveOnLoad(selector, callback) {
   this.callback = callback;
 }
 
-// {{{ util
-/**
- * @pure
- * @param {string} eventName
- * @return {boolean}
- */
-function isSupportedEvent(eventName) {
-  return targetEventNames.some(function(elm) { return elm === eventName; });
-}
-
-/**
- * Find a node selector-matched in which contains the node.
- *
- * @pure
- * @param {string} selector
- * @param {HTMLElement} node
- * @param {HTMLElement=} context =document
- * @return {HTMLElement?} Returns null when no one is found.
- */
-function contains(selector, node, context) {
-  context = context || document;
-  return takeFirst(toArray(context.querySelectorAll(selector)),
-    function(selectedNode) { return selectedNode === node; });
-  // return takeFirst(toArray(context.querySelectorAll(selector)),
-  //   function(selectedNode) { return selectedNode.contains(node); });
-}
-
-/**
- * @pure
- * @param {HTMLElement} node
- * @param {number} x
- * @param {number} y
- * @return {boolean}
- */
-function isContainPointer(node, x, y) {
-  var rect, left, top;
-
-  rect = node.getBoundingClientRect();
-  left = rect.left + window.scrollX;
-  top = rect.top + window.scrollY;
-  return left <= x && x < left + rect.width &&
-    top <= y && y < top + rect.height;
-}
-
-// /** @type {boolean} */
-// var isDOMContentLoaded = false;
-// /** @type {Array.<function()>} */
-// var domContentLoadedCallbacks = [];
-// /**
-//  * @param {function()} callback
-//  */
-// function ready(callback) {
-//   if (isDOMContentLoaded)
-//     callback();
-//   else
-//     domContentLoadedCallbacks.push(callback);
-// }
-// window.addEventListener('DOMContentLoaded',
-//   function(evt) {
-//     isDOMContentLoaded = true;
-//     domContentLoadedCallbacks.forEach(
-//       function(callback) { callback(); });
-//     domContentLoadedCallbacks = [];
-//   });
-
-/**
- * Convert Array-like object to Array.
- *
- * @pure
- * @param {object} obj
- * @return {Array}
- */
-function toArray(obj) {
-  var i, iz,
-      acum = [];
-
-  for (i = 0, iz = obj.length; i < iz; ++i)
-    acum.push(obj[i]);
-  return acum;
-}
-
-/**
- * @pure
- * @param {Array.<Object>} arr
- * @param {function(Object):boolean} fun
- * @return {Object?}
- */
-function takeFirst(arr, fun) {
-  var i, iz;
-
-  for (i = 0, iz = arr.length; i < iz; ++i) {
-    if (arr[i] !== void 0 && fun(arr[i]))
-      return arr[i];
-  }
-  return null;
-}
-// }}} util
-
 }(this));
+// vim:fdm=marker:
